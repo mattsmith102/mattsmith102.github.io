@@ -1,0 +1,48 @@
+/* wordle.css */
+
+/* 1. Container: horizontal flex so letters line up */
+.wordle-row {
+  display: flex;
+  gap: 8px;               /* space between boxes */
+  justify-content: center; /* center on the page */
+  margin-top: 50px;       /* a bit of breathing room from the top */
+}
+
+/* 2. Each letter box – square, centered text, border, font */
+.letter-box {
+  width: 60px;
+  height: 60px;
+  border: 2px solid #3a3a3c; /* dark gray border like Wordle */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  background-color: #ffffff; /* default white background */
+  color: #000000;           /* default black text */
+  user-select: none;        /* can’t accidentally highlight it */
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.2); /* subtle drop-shadow */
+}
+
+/* 3. “Correct” state: Wordle’s green */
+
+@keyframes flipIn {
+  0% {
+    transform: rotateX(0deg);
+  }
+  50% {
+    transform: rotateX(90deg);
+  }
+  100% {
+    transform: rotateX(0deg);
+  }
+}
+
+.letter-box.correct {
+  background-color: #6aaa64; /* official Wordle green */
+  border-color: #6aaa64;     /* match border to background */
+  color: #ffffff;            /* white text */
+  animation: flipIn 0.5s ease-in-out;
+  animation-fill-mode: forwards;
+}
