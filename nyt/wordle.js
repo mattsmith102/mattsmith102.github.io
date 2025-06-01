@@ -13,6 +13,7 @@
 
   // 3. Show which date we’re using (optional)
   const options = { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' };
+  const today = new Date();
   const displayDate = today.toLocaleDateString('en-GB', options);
   dateDisplay.textContent = `${displayDate}`;
 
