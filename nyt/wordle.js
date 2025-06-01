@@ -3,7 +3,7 @@
   const container = document.getElementById('wordleRow');
   const dateDisplay = document.getElementById('dateDisplay');
 
-   :// 1. Grab ?date=YYYY-MM-DD from the URL if it exists
+  // 1. Grab ?date=YYYY-MM-DD from the URL if it exists
   const params = new URLSearchParams(window.location.search);
   let chosenDate = params.get('date');
 
