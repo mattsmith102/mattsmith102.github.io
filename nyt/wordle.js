@@ -31,7 +31,7 @@
     })
     .then(data => {
       // Assume the JSON has a “word” key
-      const word = data.word?.toString().trim().toUpperCase();
+      const word = data.solution?.toString().trim().toUpperCase();
       if (!word || word.length === 0) {
         throw new Error('No “word” found in JSON.');
       }
