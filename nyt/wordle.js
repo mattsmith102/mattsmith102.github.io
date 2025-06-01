@@ -1,4 +1,7 @@
 // wordle.js
+  function handleData(data) {
+    console.log("Got my JSONP data:", data);
+  }
 
   const container = document.getElementById('wordleRow');
   const dateDisplay = document.getElementById('dateDisplay');
