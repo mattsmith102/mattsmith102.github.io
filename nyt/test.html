@@ -10,20 +10,10 @@
   <pre id="output"></pre>
 
   <script>
-    // 1) Define the global callback
     function handleData(data) {
-      //const pre = document.getElementById("output");
-      //pre.textContent = "Server said:\n" + JSON.stringify(data, null, 2);
       console.log(data)
     }
-
-    // 2) When user clicks, insert the <script> tag
-    document.getElementById("loadBtn").addEventListener("click", function () {
-      const script = document.createElement("script");
-      // Notice the callback parameter matches our function name exactly:
-      script.src = "https://www.nytimes.com/svc/wordle/v2/2025-06-01.json?callback=handleData";
-      document.body.appendChild(script);
-    });
   </script>
+  <script src="https://www.nytimes.com/svc/wordle/v2/2025-06-01.json?callback=handleData"></script>
 </body>
 </html>
