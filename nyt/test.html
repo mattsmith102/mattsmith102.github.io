@@ -5,15 +5,12 @@
   <title>JSONP Demo</title>
 </head>
 <body>
-  <h1>JSONP Workaround</h1>
-  <button id="loadBtn">Load Remote Data via JSONP</button>
-  <pre id="output"></pre>
-
+  <h1>JSONP Workaround 1</h1>
   <script>
     function handleData(data) {
       console.log(data)
     }
   </script>
-  <script src="https://www.nytimes.com/svc/wordle/v2/2025-06-01.json?callback=handleData"></script>
+  <script src="https://www.nytimes.com/svc/wordle/v2/2025-06-01.json?jsoncallback=handleData"></script>
 </body>
 </html>
