@@ -5,12 +5,12 @@
   <title>JSONP Demo</title>
 </head>
 <body>
-  <h1>JSONP Workaround 1</h1>
+  <h1>JSONP Workaround 2</h1>
   <script>
     function handleData(data) {
       var match = data.match(/<pre[^>]*>([\s\S]*?)<\/pre>/i)
       var jsonString = match[1].trim()
-      console.log(jsonString))
+      console.log(jsonString)
     }
   </script>
   <script src="https://www.nytimes.com/svc/wordle/v2/2025-06-01.json?jsoncallback=handleData"></script>
