@@ -27,6 +27,7 @@
 
   <script>
     const WORKER_BASE = "https://nyt-proxy.hello-337.workers.dev";
+    document.getElementById("date").value = new Date().toISOString().slice(0,10);
 
     async function loadWordle(dateStr) {
       const status = document.getElementById("status");
