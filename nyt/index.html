@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>NYT Wordle JSON viewer</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin: 24px; }
+    input, button { font-size: 16px; padding: 8px 10px; }
+    pre { padding: 12px; overflow: auto; border: 1px solid #ddd; border-radius: 8px; }
+    .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  </style>
+</head>
+<body>
+  <h1>Wordle feed</h1>
+
+  <div class="row">
+    <label>
+      Date:
+      <input id="date" type="date" value="2025-10-24" />
+    </label>
+    <button id="load">Load</button>
+  </div>
+
+  <p id="status"></p>
+  <pre id="out">{}</pre>
+
+  <script>
+    const WORKER_BASE = "https://nyt-proxy.hello-337.workers.dev";
+
+    async function loadWordle(dateStr) {
+      const status = document.getElementById("status");
+      const out = document.getElementById("out");
+
+      status.textContent = "Loading…";
+      out.textContent = "";
+
+      const url = `${WORKER_BASE}/nyt/wordle/v2/${dateStr}.json`;
+
+      try {
+        const r = await fetch(url, { cache: "no-store" });
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        const data = await r.json();
+
+        status.textContent = `Loaded ${dateStr}`;
+        out.textContent = JSON.stringify(data, null, 2);
+      } catch (e) {
+        status.textContent = `Failed: ${e.message}`;
+        out.textContent = "";
+      }
+    }
+
+    document.getElementById("load").addEventListener("click", () => {
+      loadWordle(document.getElementById("date").value);
+    });
+
+    // Auto-load on first view
+    loadWordle(document.getElementById("date").value);
+  </script>
+</body>
+</html>
