@@ -1,11 +1,10 @@
 <html>
   <head>
     <!-- BBC Weather Live -->
+     <title>BBC Weather Live | mt2.io</title>
     <script>
       function weatherVideo() {
         var video = document.getElementById("weather");
-        video.style.display = "block";
-        video.play();
         video.requestFullscreen()
       }
     </script>
@@ -19,9 +18,9 @@
     }
     </style>
   </head>
-  <body>    
+  <body>
     <div class="flex-container">
-      <video id="weather" width="1280" height="720" style="display: none" onclick="weatherVideo();">
+      <video id="weather" width="1280" height="720" onclick="weatherVideo();" autoplay>
         <source src="https://ve-hls-pushb-uk.live.cf.md.bbci.co.uk/x=4/i=urn:bbc:pips:service:uk_bbc_stream_051/iptv_hd_abr_v1.m3u8" type="application/x-mpegURL">
       </video>
     </div>
