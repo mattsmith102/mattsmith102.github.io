@@ -1,10 +1,16 @@
 <html>
   <head>
     <!-- BBC Weather Live -->
-     <title>BBC Weather Live | mt2.io</title>
+    <title>BBC Weather Live | mt2.io</title>
     <script>
       function weatherVideo() {
         var video = document.getElementById("weather");
+        var splash = document.getElementById("splash");
+        var fullscreenButton = document.getElementById("fullscreenButton");
+        splash.style.display = "none";
+        video.style.display = "block";
+        fullscreenButton.style.display = "block";
+        video.play();
         video.requestFullscreen()
       }
     </script>
@@ -12,6 +18,7 @@
     .flex-container
     {
         display: flex;
+        flex-direction: column;
         justify-content: center; 
         align-items: center; 
         height: 100vh;
@@ -19,8 +26,11 @@
     </style>
   </head>
   <body>
+    <img id="splash" src="bbcw.jpg" width="100%" onclick="weatherVideo();">
+    
     <div class="flex-container">
-      <video id="weather" width="1280" height="720" onclick="weatherVideo();" autoplay>
+        <button id="fullscreenButton" onclick="weatherVideo();" style="height: 100px; width: 1280px; display: none; font-size:large">Full Screen</button>
+      <video id="weather" width="1280" height="720" style="display: none" >
         <source src="https://ve-hls-pushb-uk.live.cf.md.bbci.co.uk/x=4/i=urn:bbc:pips:service:uk_bbc_stream_051/iptv_hd_abr_v1.m3u8" type="application/x-mpegURL">
       </video>
     </div>
