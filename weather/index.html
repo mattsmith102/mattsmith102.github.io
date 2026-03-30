@@ -1,10 +1,16 @@
 <html>
   <head>
     <!-- BBC Weather Live -->
+    <script>
+      document.addEventListener('click', () => {
+        document.requestFullscreen();
+      });
+    </script>
   </head>
   <body>
-    <video width="1280" height="720" autoplay controls>
+    <video width="1280" height="720" autoplay>
       <source src="https://ve-hls-pushb-uk.live.cf.md.bbci.co.uk/x=4/i=urn:bbc:pips:service:uk_bbc_stream_051/iptv_hd_abr_v1.m3u8" type="application/x-mpegURL">
     </video>
+    <button onclick="document.requestFullscreen();"/>
   </body>
 </html>
