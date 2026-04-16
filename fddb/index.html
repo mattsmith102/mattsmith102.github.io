@@ -1,0 +1,1131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex,nofollow" />
+  <title>FDDB - Family Device Database</title>
+
+  <!-- TailwindCSS CDN (optional but recommended) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Lucide icons (optional). App still works if blocked. -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    html { font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji"; }
+    body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+
+    .grain::before{
+      content:"";
+      position:fixed; inset:0;
+      pointer-events:none;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='.11'/%3E%3C/svg%3E");
+      opacity:.16;
+      mix-blend-mode:soft-light;
+      z-index:0;
+    }
+
+    .glass {
+      background: linear-gradient(180deg, rgba(255,255,255,.92), rgba(255,255,255,.76));
+      backdrop-filter: blur(18px);
+      border: 1px solid rgba(148,163,184,.30);
+    }
+
+    .card {
+      border-radius: 22px;
+      box-shadow:
+        0 22px 70px rgba(2,6,23,.12),
+        0 2px 10px rgba(2,6,23,.06);
+    }
+
+    .btn { display:inline-flex; align-items:center; justify-content:center; gap:.55rem; padding:.62rem .9rem; border-radius: 16px; font-weight:800; transition: transform .12s ease, box-shadow .2s ease, background-color .2s ease, filter .2s ease; }
+    .btn:active { transform: scale(.985); }
+    .btn-primary { background: linear-gradient(135deg, #0b1220, #111827); color:white; box-shadow: 0 12px 30px rgba(2,6,23,.28); }
+    .btn-primary:hover { box-shadow: 0 16px 42px rgba(2,6,23,.36); }
+    .btn-soft { background: rgba(148,163,184,.22); color:#0b1220; }
+    .btn-soft:hover { background: rgba(148,163,184,.30); }
+    .btn-quiet { background: rgba(255,255,255,.65); color:#0b1220; border:1px solid rgba(148,163,184,.35); }
+    .btn-quiet:hover { background: rgba(255,255,255,.82); }
+    .btn-danger { background: linear-gradient(135deg, #be123c, #9f1239); color:white; box-shadow: 0 10px 26px rgba(190,18,60,.25); }
+    .btn-danger:hover { filter: brightness(1.05); }
+    .btn-chip { padding:.42rem .7rem; border-radius: 999px; font-weight:900; font-size:.78rem; border:1px solid rgba(148,163,184,.38); background: rgba(255,255,255,.72); color:#0b1220; }
+    .btn-chip:hover { background: rgba(255,255,255,.88); }
+    .btn-chip.active { background: #0b1220; color:white; border-color: rgba(15,23,42,.65); }
+
+    .input { width:100%; padding:.68rem .9rem; border-radius: 16px; border: 1px solid rgba(148,163,184,.52); background: rgba(255,255,255,.90); outline:none; color:#0b1220; }
+    .input::placeholder { color: rgba(51,65,85,.62); }
+    .input:focus { box-shadow: 0 0 0 3px rgba(59,130,246,.25); border-color: rgba(59,130,246,.55); }
+    .label { font-size:.80rem; font-weight: 900; color: rgba(15,23,42,.80); letter-spacing:.02em; }
+
+    .chip { display:inline-flex; align-items:center; gap:.45rem; padding:.32rem .62rem; border-radius: 999px; font-size:.72rem; font-weight:900; border:1px solid rgba(148,163,184,.38); background: rgba(255,255,255,.80); color:#0b1220; }
+    .chip.good { background: rgba(16,185,129,.12); border-color: rgba(16,185,129,.35); color: rgba(6,95,70,1); }
+    .chip.warn { background: rgba(245,158,11,.14); border-color: rgba(245,158,11,.40); color: rgba(146,64,14,1); }
+    .chip.neutral { background: rgba(148,163,184,.16); border-color: rgba(148,163,184,.40); color: rgba(15,23,42,.88); }
+
+    .table { width: 100%; font-size: .92rem; }
+    .th { text-align:left; font-size: .70rem; text-transform: uppercase; letter-spacing: .11em; color: rgba(71,85,105,.95); font-weight: 900; padding: .25rem .75rem .75rem .75rem; white-space:nowrap; }
+    .td { padding: .80rem .75rem; border-top: 1px solid rgba(148,163,184,.20); vertical-align: middle; }
+    .row { cursor:pointer; transition: background-color .15s ease; }
+    .row:hover { background: rgba(148,163,184,.12); }
+
+    .fade-in { animation: fadeIn .22s ease both; }
+    @keyframes fadeIn { from { opacity:0; transform: translateY(6px);} to {opacity:1; transform:none;} }
+
+    .h-scroll { overflow-x:auto; overscroll-behavior-x: contain; scrollbar-width: thin; }
+
+    .master-detail { display:grid; gap: 16px; }
+    @media (min-width: 1024px){
+      .master-detail.two { grid-template-columns: 560px minmax(560px, 1fr); }
+      .master-detail.one { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+
+<body class="grain min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950">
+  <div id="app" class="max-w-7xl mx-auto p-4 md:p-8 relative z-[1]"></div>
+
+<script>
+/*****************
+ * Utilities
+ *****************/
+const Util = (() => {
+  const uid = () => crypto.getRandomValues(new Uint32Array(2)).join('-');
+
+  const escapeHtml = (s) => {
+    const str = (s ?? '').toString();
+    return str
+      .replace(/&/g,'&amp;')
+      .replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;')
+      .replace(/'/g,'&#39;');
+  };
+
+  const nowISO = () => new Date().toISOString();
+
+  function toast(msg, type='info'){
+    const colors = { info:'bg-slate-900', ok:'bg-emerald-700', warn:'bg-amber-700', err:'bg-rose-700' };
+    const t = document.createElement('div');
+    t.className = `fixed bottom-4 right-4 z-[99] text-white px-4 py-2 rounded-2xl shadow-2xl ${colors[type] || colors.info} fade-in`;
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(()=>t.remove(), 3200);
+  }
+
+  function download(filename, text){
+    const blob = new Blob([text], {type: 'application/octet-stream'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    a.click();
+  }
+
+  function toCSV(rows, columns){
+    const esc = (v) => {
+      const s = (v ?? '').toString();
+      const needs = /[\n\r,"]/g.test(s);
+      const out = s.split('"').join('""');
+      return needs ? `"${out}"` : out;
+    };
+    const head = columns.map(c=>esc(c.header)).join(',');
+    const body = rows.map(r => columns.map(c=>esc(r[c.key])).join(',')).join('\n');
+    return head + '\n' + body;
+  }
+
+  return { uid, escapeHtml, nowISO, toast, download, toCSV };
+})();
+
+function safeIcons(){
+  try {
+    if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
+  } catch (_) {}
+}
+function icon(name, cls='w-4 h-4'){ return `<i data-lucide="${name}" class="${cls}"></i>`; }
+
+/*****************
+ * Crypto Vault: AES-GCM + PBKDF2
+ *****************/
+const CryptoVault = (() => {
+  const te = new TextEncoder();
+  const td = new TextDecoder();
+
+  const bufToB64 = (buf) => btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(buf))));
+  const b64ToBuf = (b64) => Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+
+  async function deriveKey(password, saltB64, iterations=250000){
+    const salt = saltB64 ? b64ToBuf(saltB64) : crypto.getRandomValues(new Uint8Array(16));
+    const keyMat = await crypto.subtle.importKey('raw', te.encode(password), {name:'PBKDF2'}, false, ['deriveKey']);
+    const key = await crypto.subtle.deriveKey(
+      {name:'PBKDF2', salt, iterations, hash:'SHA-256'},
+      keyMat,
+      {name:'AES-GCM', length:256},
+      false,
+      ['encrypt','decrypt']
+    );
+    return { key, saltB64: bufToB64(salt), iterations };
+  }
+
+  async function encrypt(key, dataObj){
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+    const pt = te.encode(JSON.stringify(dataObj));
+    const ct = await crypto.subtle.encrypt({name:'AES-GCM', iv}, key, pt);
+    return { iv: bufToB64(iv), ct: bufToB64(ct) };
+  }
+
+  async function decrypt(key, envelope){
+    try {
+      const iv = b64ToBuf(envelope.iv);
+      const ct = b64ToBuf(envelope.ct);
+      const pt = await crypto.subtle.decrypt({name:'AES-GCM', iv}, key, ct);
+      return JSON.parse(td.decode(pt));
+    } catch {
+      throw new Error('Decryption failed. Wrong password or corrupted file.');
+    }
+  }
+
+  function emptyData(){
+    return {
+      schema: 'asset-ledger/v3',
+      createdAt: Util.nowISO(),
+      updatedAt: Util.nowISO(),
+      users: [],
+      devices: []
+    };
+  }
+
+  async function createEnvelope(password, data){
+    const {key, saltB64, iterations} = await deriveKey(password);
+    const {iv, ct} = await encrypt(key, data);
+    return { schema:'asset-ledger-envelope/v3', alg:'AES-GCM', kdf:'PBKDF2-SHA256', iter: iterations, salt: saltB64, iv, ct };
+  }
+
+  async function unlock(password, envelope){
+    if (!envelope || !envelope.salt) throw new Error('Invalid vault file.');
+    const {key} = await deriveKey(password, envelope.salt, envelope.iter);
+    const data = await decrypt(key, envelope);
+    return { data };
+  }
+
+  async function reEncrypt(password, envelope, data){
+    const {key} = await deriveKey(password, envelope.salt, envelope.iter);
+    const {iv, ct} = await encrypt(key, data);
+    return { ...envelope, iv, ct };
+  }
+
+  return { emptyData, createEnvelope, unlock, reEncrypt };
+})();
+
+/*****************
+ * File support detection (Chrome/Edge)
+ *****************/
+const FS = (() => {
+  const canFS = typeof window.showOpenFilePicker === 'function' && typeof window.showSaveFilePicker === 'function';
+
+  async function pickSaveHandle(){
+    return await window.showSaveFilePicker({
+      suggestedName: 'asset-ledger.vault.json',
+      types: [{ description: 'Asset Ledger Vault', accept: {'application/json':['.json']} }]
+    });
+  }
+
+  async function pickOpenHandle(){
+    const [handle] = await window.showOpenFilePicker({
+      multiple:false,
+      types: [{ description: 'Asset Ledger Vault', accept: {'application/json':['.json']} }]
+    });
+    return handle;
+  }
+
+  return { canFS, pickSaveHandle, pickOpenHandle };
+})();
+
+/*****************
+ * HandleStore: remembers last file handle (Chrome/Edge)
+ *****************/
+const HandleStore = (() => {
+  const DB = 'asset-ledger-db';
+  const STORE = 'kv';
+  const KEY = 'lastHandle';
+
+  function openDB(){
+    return new Promise((resolve, reject) => {
+      const req = indexedDB.open(DB, 1);
+      req.onupgradeneeded = () => {
+        const db = req.result;
+        if (!db.objectStoreNames.contains(STORE)) db.createObjectStore(STORE);
+      };
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+  }
+
+  async function set(handle){
+    const db = await openDB();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(STORE, 'readwrite');
+      tx.objectStore(STORE).put(handle, KEY);
+      tx.oncomplete = () => resolve(true);
+      tx.onerror = () => reject(tx.error);
+    });
+  }
+
+  async function get(){
+    const db = await openDB();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(STORE, 'readonly');
+      const req = tx.objectStore(STORE).get(KEY);
+      req.onsuccess = () => resolve(req.result || null);
+      req.onerror = () => reject(req.error);
+    });
+  }
+
+  return { set, get };
+})();
+
+/*****************
+ * App
+ *****************/
+const App = (() => {
+  let state = {
+    view: 'locked',
+    password: '',
+    envelope: null,
+    data: null,
+    fileHandle: null,
+    dirty: false,
+
+    search: '',
+    deviceFilter: 'all',
+    selectedDeviceId: null,
+    selectedUserId: null,
+
+    showDetails: true,
+  };
+
+  const setState = (p) => { state = Object.assign({}, state, p); render(); };
+  const users = () => (state.data && state.data.users) ? state.data.users : [];
+  const devices = () => (state.data && state.data.devices) ? state.data.devices : [];
+  const userName = (id) => (users().find(u=>u.id===id) || {}).name || '';
+
+  const bumpUpdated = () => { if (state.data) state.data.updatedAt = Util.nowISO(); };
+  const markDirty = (v=true) => { state.dirty = v; };
+
+  // Backfill for older vaults
+  function ensureNewDeviceFields(data){
+    const defaults = { memory:'', processor:'', speed:'', purchaseDate:'', notes:'' };
+    (data.devices || []).forEach(d => {
+      Object.keys(defaults).forEach(k => {
+        if (typeof d[k] === 'undefined') d[k] = defaults[k];
+      });
+    });
+  }
+
+  const isOutdated = (d) => {
+    const a = (d.currentOS || '').trim();
+    const b = (d.latestOS || '').trim();
+    return !!(a && b && a !== b);
+  };
+
+  const filteredDevices = () => {
+    const q = (state.search || '').toLowerCase();
+    let list = devices().filter(d => {
+      const hay = [
+        d.name, d.model, d.productCode, d.serial,
+        d.currentOS, d.latestOS, d.capacity,
+        d.memory, d.processor, d.speed, d.purchaseDate,
+        userName(d.userId)
+      ].join(' ').toLowerCase();
+      return hay.indexOf(q) !== -1;
+    });
+
+    if (state.deviceFilter === 'unassigned') list = list.filter(d => !d.userId);
+    if (state.deviceFilter === 'outdated') list = list.filter(d => isOutdated(d));
+
+    list.sort((a,b)=> (a.name||'').localeCompare(b.name||'', undefined, {sensitivity:'base'}));
+    return list;
+  };
+
+  const countDevicesByUser = () => {
+    const m = new Map();
+    users().forEach(u=>m.set(u.id, 0));
+    devices().forEach(d => { if (d.userId) m.set(d.userId, (m.get(d.userId)||0)+1); });
+    return m;
+  };
+
+  function toggleDetails(){
+    state.showDetails = !state.showDetails;
+    render();
+  }
+
+  async function saveVault(){
+    if (!state.envelope || !state.data) return;
+    bumpUpdated();
+
+    if (state.fileHandle){
+      try {
+        const updatedEnv = await CryptoVault.reEncrypt(state.password, state.envelope, state.data);
+        const writable = await state.fileHandle.createWritable();
+        await writable.write(JSON.stringify(updatedEnv));
+        await writable.close();
+        state.envelope = updatedEnv;
+        markDirty(false);
+        Util.toast('Saved to file', 'ok');
+        render();
+        return;
+      } catch (_) {
+        Util.toast('Save failed to file — downloading instead.', 'warn');
+      }
+    }
+
+    const updatedEnv = await CryptoVault.reEncrypt(state.password, state.envelope, state.data);
+    state.envelope = updatedEnv;
+    markDirty(false);
+    Util.download('asset-ledger.vault.json', JSON.stringify(updatedEnv, null, 2));
+    Util.toast('Downloaded vault (Safari-friendly)', 'ok');
+    render();
+  }
+
+  async function createNewVault(){
+    const pwd = prompt('Set a password for your vault (required):');
+    if (!pwd) return;
+
+    const data = CryptoVault.emptyData();
+    const env = await CryptoVault.createEnvelope(pwd, data);
+
+    if (FS.canFS){
+      try {
+        const handle = await FS.pickSaveHandle();
+        const writable = await handle.createWritable();
+        await writable.write(JSON.stringify(env));
+        await writable.close();
+
+        await HandleStore.set(handle);
+
+        setState({
+          view:'devices',
+          password: pwd,
+          envelope: env,
+          data,
+          fileHandle: handle,
+          dirty:false,
+          selectedDeviceId: null,
+          selectedUserId: null,
+          showDetails: true,
+        });
+
+        Util.toast('Vault created', 'ok');
+        return;
+      } catch (_) {}
+    }
+
+    Util.download('asset-ledger.vault.json', JSON.stringify(env, null, 2));
+    setState({ view:'devices', password: pwd, envelope: env, data, fileHandle: null, dirty:false, showDetails:true });
+    Util.toast('Vault created (downloaded)', 'ok');
+  }
+
+  async function openExistingVault(){
+    if (FS.canFS){
+      try {
+        const handle = await FS.pickOpenHandle();
+        await openFromHandle(handle);
+        return;
+      } catch (_) { return; }
+    }
+    const input = document.getElementById('fileInput');
+    if (input) input.click();
+  }
+
+  async function reconnectLast(){
+    if (!FS.canFS){
+      Util.toast("Reconnect isn't supported in this browser. Use Open vault.", 'warn');
+      return;
+    }
+
+    let handle = null;
+    try { handle = await HandleStore.get(); }
+    catch { Util.toast('Could not access saved handle store.', 'err'); return; }
+
+    if (!handle){
+      Util.toast('No previous vault to reconnect. Use Open vault once first.', 'warn');
+      return;
+    }
+
+    try {
+      let perm = await handle.queryPermission({mode:'readwrite'});
+      if (perm !== 'granted') perm = await handle.requestPermission({mode:'readwrite'});
+      if (perm !== 'granted'){
+        Util.toast('Permission not granted to reopen the file.', 'warn');
+        return;
+      }
+      await openFromHandle(handle);
+    } catch {
+      Util.toast('Reconnect failed. Try Open vault instead.', 'err');
+    }
+  }
+
+  async function openFromHandle(handle){
+    const file = await handle.getFile();
+    const text = await file.text();
+
+    let env;
+    try { env = JSON.parse(text); }
+    catch { Util.toast('File is not valid JSON', 'err'); return; }
+
+    const pwd = prompt('Vault password:');
+    if (!pwd) return;
+
+    try {
+      const { data } = await CryptoVault.unlock(pwd, env);
+      ensureNewDeviceFields(data);
+
+      try { await HandleStore.set(handle); } catch (_) {}
+
+      const firstDev = (data.devices && data.devices[0]) ? data.devices[0].id : null;
+      const firstUser = (data.users && data.users[0]) ? data.users[0].id : null;
+
+      setState({
+        view:'devices',
+        password: pwd,
+        envelope: env,
+        data,
+        fileHandle: handle,
+        dirty:false,
+        selectedDeviceId: firstDev,
+        selectedUserId: firstUser,
+        showDetails: true,
+      });
+
+      Util.toast('Unlocked', 'ok');
+    } catch (e) {
+      Util.toast(e.message, 'err');
+    }
+  }
+
+  function openFromUpload(file){
+    const reader = new FileReader();
+    reader.onload = async () => {
+      let env;
+      try { env = JSON.parse(reader.result); }
+      catch { Util.toast('Invalid file', 'err'); return; }
+
+      const pwd = prompt('Vault password:');
+      if (!pwd) return;
+
+      try {
+        const { data } = await CryptoVault.unlock(pwd, env);
+        ensureNewDeviceFields(data);
+
+        const firstDev = (data.devices && data.devices[0]) ? data.devices[0].id : null;
+        const firstUser = (data.users && data.users[0]) ? data.users[0].id : null;
+
+        setState({
+          view:'devices',
+          password: pwd,
+          envelope: env,
+          data,
+          fileHandle: null,
+          dirty:false,
+          selectedDeviceId: firstDev,
+          selectedUserId: firstUser,
+          showDetails: true,
+        });
+
+        Util.toast('Unlocked', 'ok');
+      } catch (e) {
+        Util.toast(e.message, 'err');
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  function addDeviceInline(){
+    if (!state.data) return;
+    const d = {
+      id: Util.uid(),
+      name:'',
+      model:'',
+      productCode:'',
+      serial:'',
+      currentOS:'',
+      latestOS:'',
+      capacity:'',
+      userId: null,
+
+      memory: '',
+      processor: '',
+      speed: '',
+      purchaseDate: '',
+      notes: '',
+    };
+    state.data.devices.unshift(d);
+    state.selectedDeviceId = d.id;
+    state.showDetails = true;
+    markDirty(true);
+    render();
+    requestAnimationFrame(() => {
+      const el = document.querySelector('[data-focus="device-name"]');
+      if (el) el.focus();
+    });
+  }
+
+  function updateDevice(id, key, value){
+    const d = devices().find(x=>x.id===id);
+    if (!d) return;
+    d[key] = value;
+    markDirty(true); // <-- critical: restores "Unsaved changes"
+  }
+
+  function deleteDevice(id){
+    if (!state.data) return;
+    state.data.devices = devices().filter(d=>d.id!==id);
+    if (state.selectedDeviceId === id) {
+      const list = filteredDevices();
+      state.selectedDeviceId = list[0] ? list[0].id : (state.data.devices[0] ? state.data.devices[0].id : null);
+    }
+    markDirty(true);
+    render();
+  }
+
+  function addUserInline(){
+    if (!state.data) return;
+    const name = prompt('User name:');
+    if (!name) return;
+    const u = { id: Util.uid(), name: name.trim(), email:'', notes:'' };
+    state.data.users.unshift(u);
+    state.selectedUserId = u.id;
+    markDirty(true);
+    render();
+  }
+
+  function updateUser(id, key, value){
+    const u = users().find(x=>x.id===id);
+    if (!u) return;
+    u[key] = value;
+    markDirty(true);
+  }
+
+  function deleteUser(id){
+    if (!state.data) return;
+    devices().forEach(d => { if (d.userId === id) d.userId = null; });
+    state.data.users = users().filter(u=>u.id!==id);
+    if (state.selectedUserId === id) state.selectedUserId = state.data.users[0] ? state.data.users[0].id : null;
+    markDirty(true);
+    render();
+  }
+
+  function setView(v){
+    if (v === 'devices'){
+      state.view = 'devices';
+      if (!state.selectedDeviceId) {
+        const list = filteredDevices();
+        state.selectedDeviceId = list[0] ? list[0].id : (devices()[0] ? devices()[0].id : null);
+      }
+      render();
+      return;
+    }
+    if (v === 'users'){
+      state.view = 'users';
+      if (!state.selectedUserId) state.selectedUserId = users()[0] ? users()[0].id : null;
+      render();
+      return;
+    }
+  }
+
+  function setSearch(v){ setState({ search: v }); }
+  function setFilter(f){
+    state.deviceFilter = f;
+    const list = filteredDevices();
+    if (list[0]) state.selectedDeviceId = list[0].id;
+    render();
+  }
+
+  function selectDevice(id){ setState({ selectedDeviceId: id }); }
+  function selectUser(id){ setState({ selectedUserId: id }); }
+
+  function lock(){
+    setState({
+      view:'locked',
+      password:'',
+      envelope:null,
+      data:null,
+      fileHandle:null,
+      dirty:false,
+      search:'',
+      deviceFilter:'all',
+      selectedDeviceId:null,
+      selectedUserId:null,
+      showDetails:true,
+    });
+  }
+
+  function exportCSV(){
+    const u = users().map(x => ({ name:x.name, email:x.email, notes:x.notes }));
+    const d = devices().map(x => ({
+      deviceName: x.name,
+      model: x.model,
+      productCode: x.productCode,
+      serialNumber: x.serial,
+      currentOS: x.currentOS,
+      latestOS: x.latestOS,
+      capacity: x.capacity,
+      user: userName(x.userId),
+
+      memory: x.memory,
+      processor: x.processor,
+      speed: x.speed,
+      purchaseDate: x.purchaseDate,
+      notes: x.notes,
+    }));
+
+    const usersCSV = Util.toCSV(u, [
+      {header:'Name', key:'name'},
+      {header:'Email', key:'email'},
+      {header:'Notes', key:'notes'},
+    ]);
+
+    const devicesCSV = Util.toCSV(d, [
+      {header:'Device Name', key:'deviceName'},
+      {header:'Model', key:'model'},
+      {header:'Product Code', key:'productCode'},
+      {header:'Serial Number', key:'serialNumber'},
+      {header:'Current OS', key:'currentOS'},
+      {header:'Latest OS', key:'latestOS'},
+      {header:'Capacity', key:'capacity'},
+      {header:'User', key:'user'},
+
+      {header:'Memory', key:'memory'},
+      {header:'Processor', key:'processor'},
+      {header:'Speed', key:'speed'},
+      {header:'Purchase Date', key:'purchaseDate'},
+      {header:'Notes', key:'notes'},
+    ]);
+
+    Util.download('users.csv', usersCSV);
+    Util.download('devices.csv', devicesCSV);
+    Util.toast('Exported CSV files', 'ok');
+  }
+
+  function topBar(){
+    const badge = state.dirty
+      ? `<span class="chip warn">${icon('dot','w-3 h-3')} Unsaved changes</span>`
+      : `<span class="chip neutral">${icon('shield-check','w-3 h-3')} Encrypted</span>`;
+
+    return `
+      <div class="glass card p-5 mb-5">
+        <div class="flex flex-wrap items-center gap-3">
+          <div class="flex items-center gap-3">
+            <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-slate-950 to-slate-800 text-white flex items-center justify-content-center shadow-2xl">
+              ${icon('monitor-smartphone','w-5 h-5')}
+            </div>
+            <div>
+              <div class="text-slate-950 text-xl md:text-2xl font-extrabold tracking-tight"><strong>FDDB</strong>: Family Device Database</div>
+              <div class="text-slate-600 text-sm"></div>
+            </div>
+          </div>
+
+          <div class="ml-auto flex flex-wrap items-center gap-2">
+            ${badge}
+            <button class="btn btn-quiet" onclick="App.exportCSV()">${icon('file-spreadsheet')} Export CSV</button>
+            <button class="btn btn-primary" onclick="App.saveVault()">${icon('save')} Save</button>
+            <button class="btn btn-quiet" onclick="App.lock()">${icon('lock')} Lock</button>
+          </div>
+        </div>
+
+        <div class="mt-4 flex flex-wrap items-center gap-2">
+          <button class="btn ${state.view==='devices'?'btn-primary':'btn-quiet'}" onclick="App.setView('devices')">${icon('hard-drive')} Devices</button>
+          <button class="btn ${state.view==='users'?'btn-primary':'btn-quiet'}" onclick="App.setView('users')">${icon('users')} Users</button>
+
+          <div class="ml-auto relative w-full md:w-[360px]">
+            <input class="input pl-11" placeholder="Search devices…" value="${Util.escapeHtml(state.search)}" oninput="App.setSearch(this.value)" />
+            <div class="absolute left-4 top-3 text-slate-500">${icon('search')}</div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function lockedView(){
+    const reconnectHint = FS.canFS
+      ? 'Reconnect last reopens the last vault you opened/created in this browser.'
+      : "Reconnect last isn't supported here — use Open vault.";
+
+    return `
+      <div class="max-w-2xl mx-auto mt-10 md:mt-20">
+        <div class="glass card p-8 md:p-10">
+          <div class="flex items-start gap-4">
+            <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-slate-950 to-slate-700 text-white flex items-center justify-center shadow-2xl">
+              ${icon('key-round','w-6 h-6')}
+            </div>
+            <div class="flex-1">
+              <div class="text-2xl md:text-3xl font-extrabold tracking-tight text-slate-950">Welcome.</div>
+              <div class="text-slate-700 mt-1">
+                Encrypted local vault. Best experience in Chrome/Edge (true file save). Safari works too — saves via download.
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-8 grid md:grid-cols-3 gap-3">
+            <button class="btn btn-primary" onclick="App.createNewVault()">${icon('sparkles')} Create vault</button>
+            <button class="btn btn-quiet" onclick="App.openExistingVault()">${icon('folder-open')} Open vault</button>
+            <button class="btn btn-quiet" onclick="App.reconnectLast()">${icon('rotate-ccw')} Reconnect last</button>
+          </div>
+
+          <div class="mt-5 text-xs text-slate-600">${reconnectHint}</div>
+          <input id="fileInput" class="hidden" type="file" accept="application/json,.json" />
+        </div>
+      </div>
+    `;
+  }
+
+  function devicesMasterDetail(){
+    const list = filteredDevices();
+    const selected = devices().find(d=>d.id===state.selectedDeviceId) || list[0] || null;
+
+    const filterBar = `
+      <div class="flex flex-wrap items-center gap-2">
+        <button class="btn-chip ${state.deviceFilter==='all'?'active':''}" onclick="App.setFilter('all')">All</button>
+        <button class="btn-chip ${state.deviceFilter==='unassigned'?'active':''}" onclick="App.setFilter('unassigned')">Unassigned</button>
+        <button class="btn-chip ${state.deviceFilter==='outdated'?'active':''}" onclick="App.setFilter('outdated')">Outdated OS</button>
+
+        <div class="ml-auto flex gap-2">
+          <button class="btn btn-quiet" onclick="App.toggleDetails()">
+            ${icon(state.showDetails ? 'panel-right-close' : 'panel-right-open')}
+            ${state.showDetails ? 'Hide details' : 'Show details'}
+          </button>
+          <button class="btn btn-soft" onclick="App.addDeviceInline()">${icon('plus')} Add device</button>
+        </div>
+      </div>
+    `;
+
+    const rows = (list.length ? list : []).map(d => {
+      const active = selected && d.id === selected.id;
+      const rowBg = active ? 'background: rgba(15,23,42,.08);' : '';
+      const latestChip = d.latestOS
+        ? (isOutdated(d)
+            ? `<span class="chip warn">${icon('triangle-alert','w-3 h-3')}${Util.escapeHtml(d.latestOS)}</span>`
+            : `<span class="chip good">${icon('check','w-3 h-3')}${Util.escapeHtml(d.latestOS)}</span>`)
+        : `<span class="text-slate-600">—</span>`;
+
+      return `
+        <tr class="row" style="${rowBg}" onclick="App.selectDevice('${d.id}')">
+          <td class="td font-semibold text-slate-950">${Util.escapeHtml(d.name||'—')}</td>
+          <td class="td text-slate-800">${Util.escapeHtml(d.model||'—')}</td>
+          <td class="td">${d.currentOS ? `<span class="chip neutral">${icon('cpu','w-3 h-3')}${Util.escapeHtml(d.currentOS)}</span>` : `<span class="text-slate-600">—</span>`}</td>
+          <td class="td">${latestChip}</td>
+          <td class="td text-slate-800">${Util.escapeHtml(d.capacity||'—')}</td>
+          <td class="td">${d.userId ? `<span class="chip">${icon('user','w-3 h-3')}${Util.escapeHtml(userName(d.userId))}</span>` : `<span class="text-slate-600">—</span>`}</td>
+        </tr>
+      `;
+    }).join('');
+
+    const table = `
+      <div class="glass card p-4">
+        ${filterBar}
+        <div class="h-scroll mt-3">
+          <table class="table">
+            <tr>
+              <th class="th">Device</th>
+              <th class="th">Model</th>
+              <th class="th">Current OS</th>
+              <th class="th">Latest OS</th>
+              <th class="th">Capacity</th>
+              <th class="th">User</th>
+            </tr>
+            ${rows || `<tr><td class="td text-slate-700" colspan="6">No devices yet. Click “Add device”.</td></tr>`}
+          </table>
+        </div>
+      </div>
+    `;
+
+    const klass = state.showDetails ? 'two' : 'one';
+    const detail = state.showDetails ? `<div>${deviceDetailPanel(selected)}</div>` : ``;
+
+    return `
+      <div class="master-detail ${klass}">
+        <div>${table}</div>
+        ${detail}
+      </div>
+    `;
+  }
+
+  function deviceDetailPanel(d){
+    if (!d){
+      return `
+        <div class="glass card p-6">
+          <div class="text-slate-950 font-extrabold tracking-tight">Device</div>
+          <div class="text-slate-700 mt-2">No device selected.</div>
+        </div>
+      `;
+    }
+
+    const field = (label, key, placeholder, extraAttr) => `
+      <div>
+        <div class="label">${label}</div>
+        <input class="input" ${extraAttr||''} value="${Util.escapeHtml(d[key]||'')}" placeholder="${Util.escapeHtml(placeholder||'')}"
+          oninput="App.updateDevice('${d.id}','${key}',this.value)" />
+      </div>
+    `;
+
+    const sortedUsers = users().slice().sort((a,b)=>(a.name||'').localeCompare(b.name||''));
+    const userSelect = `
+      <div>
+        <div class="label">User</div>
+        <select class="input" onchange="App.updateDevice('${d.id}','userId', this.value || null)">
+          <option value="">— Unassigned —</option>
+          ${sortedUsers.map(u => `<option value="${u.id}" ${d.userId===u.id?'selected':''}>${Util.escapeHtml(u.name)}</option>`).join('')}
+        </select>
+      </div>
+    `;
+
+    const latestChip = d.latestOS
+      ? (isOutdated(d)
+          ? `<span class="chip warn">${icon('triangle-alert','w-3 h-3')}${Util.escapeHtml(d.latestOS)}</span>`
+          : `<span class="chip good">${icon('check','w-3 h-3')}${Util.escapeHtml(d.latestOS)}</span>`)
+      : `<span class="chip neutral">—</span>`;
+
+    const glance = `
+      <div class="glass card p-5">
+        <div class="text-slate-950 font-extrabold tracking-tight mb-3">At a glance</div>
+        <div class="grid grid-cols-2 gap-3 text-sm">
+          <div class="flex items-center justify-between gap-3 p-3 rounded-2xl bg-white/70 border border-slate-200">
+            <span class="text-slate-700 font-semibold">Owner</span>
+            <span class="chip">${icon('user','w-3 h-3')}${Util.escapeHtml(userName(d.userId) || '—')}</span>
+          </div>
+          <div class="flex items-center justify-between gap-3 p-3 rounded-2xl bg-white/70 border border-slate-200">
+            <span class="text-slate-700 font-semibold">Capacity</span>
+            <span class="chip neutral">${icon('database','w-3 h-3')}${Util.escapeHtml(d.capacity || '—')}</span>
+          </div>
+          <div class="flex items-center justify-between gap-3 p-3 rounded-2xl bg-white/70 border border-slate-200">
+            <span class="text-slate-700 font-semibold">Current OS</span>
+            <span class="chip neutral">${icon('cpu','w-3 h-3')}${Util.escapeHtml(d.currentOS || '—')}</span>
+          </div>
+          <div class="flex items-center justify-between gap-3 p-3 rounded-2xl bg-white/70 border border-slate-200">
+            <span class="text-slate-700 font-semibold">Latest OS</span>
+            ${latestChip}
+          </div>
+        </div>
+      </div>
+    `;
+
+    return `
+      <div class="glass card p-6">
+        <div class="flex items-start gap-3">
+          <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-slate-950 to-slate-800 text-white flex items-center justify-center shadow-xl">${icon('hard-drive','w-5 h-5')}</div>
+          <div class="flex-1">
+            <div class="text-slate-950 text-xl font-extrabold tracking-tight">${Util.escapeHtml(d.name || 'New device')}</div>
+            <div class="text-slate-700 text-sm">${Util.escapeHtml(d.model || 'Model not set')} • ${Util.escapeHtml(d.productCode || 'Product code not set')}</div>
+          </div>
+          <div class="flex gap-2">
+            <button class="btn btn-danger" onclick="if(confirm('Delete this device?')) App.deleteDevice('${d.id}')">${icon('trash-2')} Delete</button>
+          </div>
+        </div>
+
+        <div class="mt-5 grid md:grid-cols-2 gap-4">
+          ${field('Device Name','name','e.g., Matt’s iPhone','data-focus="device-name"')}
+          ${field('Model','model','e.g., iPhone 15 Pro Max')}
+          ${field('Product Code','productCode','e.g., MU7A3B/A')}
+          ${field('Serial Number','serial','')}
+          ${field('Current OS','currentOS','e.g., iOS 18.2')}
+          ${field('Latest OS','latestOS','e.g., iOS 18.2')}
+          ${field('Capacity','capacity','e.g., 256GB')}
+          ${userSelect}
+
+          ${field('Purchase Date','purchaseDate','', 'type="date"')}
+          ${field('Memory','memory','e.g., 8GB / 16GB')}
+          ${field('Processor','processor','e.g., M2 / A17 Pro')}
+          ${field('Speed','speed','e.g., 3.2GHz / 120Hz')}
+        </div>
+
+        <div class="mt-4">
+          <div class="label">Notes</div>
+          <textarea class="input" style="min-height: 120px; resize: vertical;"
+            placeholder="Anything else you want to capture…"
+            oninput="App.updateDevice('${d.id}','notes',this.value)">${Util.escapeHtml(d.notes||'')}</textarea>
+        </div>
+
+        <div class="mt-5">${glance}</div>
+        <div class="mt-4 text-xs text-slate-600">
+          Changes are saved when you press <span class="font-black">Save</span> in the header.
+        </div>
+      </div>
+    `;
+  }
+
+  function usersMasterDetail(){
+    const list = users().slice().sort((a,b)=>(a.name||'').localeCompare(b.name||''));
+    const selected = users().find(u=>u.id===state.selectedUserId) || list[0] || null;
+    const counts = countDevicesByUser();
+
+    const tableRows = list.map(u => {
+      const active = selected && u.id === selected.id;
+      const rowBg = active ? 'background: rgba(15,23,42,.08);' : '';
+      return `
+        <tr class="row" style="${rowBg}" onclick="App.selectUser('${u.id}')">
+          <td class="td font-semibold text-slate-950">${Util.escapeHtml(u.name||'—')}</td>
+          <td class="td text-slate-800">${Util.escapeHtml(u.email||'—')}</td>
+          <td class="td"><span class="chip neutral">${icon('hard-drive','w-3 h-3')}${counts.get(u.id)||0}</span></td>
+        </tr>
+      `;
+    }).join('');
+
+    const table = `
+      <div class="glass card p-4">
+        <div class="flex flex-wrap items-center gap-2">
+          <div class="text-slate-950 font-extrabold tracking-tight">Users</div>
+          <div class="ml-auto flex gap-2">
+            <button class="btn btn-soft" onclick="App.addUserInline()">${icon('user-plus')} Add user</button>
+          </div>
+        </div>
+
+        <div class="h-scroll mt-3">
+          <table class="table">
+            <tr>
+              <th class="th">Name</th>
+              <th class="th">Email</th>
+              <th class="th">Devices</th>
+            </tr>
+            ${tableRows || `<tr><td class="td text-slate-700" colspan="3">No users yet. Click “Add user”.</td></tr>`}
+          </table>
+        </div>
+      </div>
+    `;
+
+    return `
+      <div class="master-detail two">
+        <div>${table}</div>
+        <div>${userDetailPanel(selected)}</div>
+      </div>
+    `;
+  }
+
+  function userDetailPanel(u){
+    if (!u){
+      return `
+        <div class="glass card p-6">
+          <div class="text-slate-950 font-extrabold tracking-tight">User</div>
+          <div class="text-slate-700 mt-2">No user selected.</div>
+        </div>
+      `;
+    }
+
+    const owned = devices().filter(d=>d.userId===u.id).sort((a,b)=>(a.name||'').localeCompare(b.name||''));
+
+    const field = (label, key, placeholder) => `
+      <div>
+        <div class="label">${label}</div>
+        <input class="input" value="${Util.escapeHtml(u[key]||'')}" placeholder="${Util.escapeHtml(placeholder||'')}"
+          oninput="App.updateUser('${u.id}','${key}',this.value)" />
+      </div>
+    `;
+
+    const ownedRows = owned.map(d => `
+      <tr class="row" onclick="App.setView('devices'); App.selectDevice('${d.id}')">
+        <td class="td font-semibold text-slate-950">${Util.escapeHtml(d.name||'—')}</td>
+        <td class="td text-slate-800">${Util.escapeHtml(d.model||'—')}</td>
+        <td class="td">${d.currentOS ? `<span class="chip neutral">${icon('cpu','w-3 h-3')}${Util.escapeHtml(d.currentOS)}</span>` : `<span class="text-slate-600">—</span>`}</td>
+        <td class="td">${d.latestOS ? (isOutdated(d) ? `<span class="chip warn">${icon('triangle-alert','w-3 h-3')}${Util.escapeHtml(d.latestOS)}</span>` : `<span class="chip good">${icon('check','w-3 h-3')}${Util.escapeHtml(d.latestOS)}</span>`) : `<span class="text-slate-600">—</span>`}</td>
+        <td class="td text-slate-800">${Util.escapeHtml(d.capacity||'—')}</td>
+      </tr>
+    `).join('');
+
+    const ownedTable = `
+      <div class="glass card p-5 mt-5">
+        <div class="flex items-center justify-between">
+          <div class="text-slate-950 font-extrabold tracking-tight">Devices (${owned.length})</div>
+          <button class="btn btn-quiet" onclick="App.setView('devices')">${icon('arrow-right')} View in devices</button>
+        </div>
+        <div class="h-scroll mt-3">
+          <table class="table">
+            <tr>
+              <th class="th">Device</th>
+              <th class="th">Model</th>
+              <th class="th">Current OS</th>
+              <th class="th">Latest OS</th>
+              <th class="th">Capacity</th>
+            </tr>
+            ${ownedRows || `<tr><td class="td text-slate-700" colspan="5">No devices assigned.</td></tr>`}
+          </table>
+        </div>
+      </div>
+    `;
+
+    return `
+      <div class="glass card p-6">
+        <div class="flex items-start gap-3">
+          <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-slate-950 to-slate-800 text-white flex items-center justify-center shadow-xl">${icon('user','w-5 h-5')}</div>
+          <div class="flex-1">
+            <div class="text-slate-950 text-xl font-extrabold tracking-tight">${Util.escapeHtml(u.name || 'User')}</div>
+            <div class="text-slate-700 text-sm">Profile + assigned devices</div>
+          </div>
+          <button class="btn btn-danger" onclick="if(confirm('Delete this user? Devices will become unassigned.')) App.deleteUser('${u.id}')">${icon('trash-2')} Delete</button>
+        </div>
+
+        <div class="mt-5 grid md:grid-cols-2 gap-4">
+          ${field('Name','name','e.g., Matt')}
+          ${field('Email','email','')}
+          <div class="md:col-span-2">
+            <div class="label">Notes</div>
+            <textarea class="input" style="min-height: 92px; resize: vertical;" oninput="App.updateUser('${u.id}','notes',this.value)">${Util.escapeHtml(u.notes||'')}</textarea>
+          </div>
+        </div>
+
+        ${ownedTable}
+
+        <div class="mt-4 text-xs text-slate-600">
+          Tip: edits are inline. Save from the header.
+        </div>
+      </div>
+    `;
+  }
+
+  function page(){
+    if (state.view === 'locked' || !state.data) return lockedView();
+    return topBar() + (state.view === 'users' ? usersMasterDetail() : devicesMasterDetail());
+  }
+
+  function render(){
+    const app = document.getElementById('app');
+    app.innerHTML = page();
+
+    const fi = document.getElementById('fileInput');
+    if (fi){
+      fi.onchange = (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (file) openFromUpload(file);
+      };
+    }
+
+    safeIcons();
+  }
+
+  return {
+    render,
+    createNewVault,
+    openExistingVault,
+    reconnectLast,
+    saveVault,
+    exportCSV,
+    lock,
+    setView,
+    setSearch,
+    setFilter,
+    addDeviceInline,
+    selectDevice,
+    updateDevice,
+    deleteDevice,
+    toggleDetails,
+    addUserInline,
+    selectUser,
+    updateUser,
+    deleteUser,
+  };
+})();
+
+window.App = App;
+App.render();
+</script>
+</body>
+</html>
